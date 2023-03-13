@@ -2,8 +2,10 @@
 Вспомогательные функции
 """
 
-from typing import Iterable, Iterator
-
+from typing import Iterable, Iterator, Any
+from bookkeeper.models.expense import Expense
+from bookkeeper.models.category import Category
+from bookkeeper.models.budget import Budget
 
 def _get_indent(line: str) -> int:
     return len(line) - len(line.lstrip())
@@ -61,3 +63,37 @@ def read_tree(lines: Iterable[str]) -> list[tuple[str, str | None]]:
         last_name = name
         last_indent = indent
     return result
+
+def expense_adapter(exp_row: dict[str, Any]) -> Expense:
+    """
+    Адаптер для базы с тратами
+    """
+    return Expense(pk=int(exp_row['pk']), amount=int(exp_row['amount']),
+                   expense_date=exp_row['expense_date'],
+                   added_date=exp_row['added_date'],
+                   comment=exp_row['comment'], category=int(exp_row['category']))
+
+
+def category_adapter(cat_row: dict[str, Any]) -> Category:
+    """
+    Адаптер для базы с категориями
+    """
+    return Category(pk=cat_row['pk'], name=cat_row['name'],
+                    parent=cat_row['parent'])
+
+
+def budget_adapter(budget_row: dict[str, Any]) -> Budget:
+    """
+    Адаптер для базы с бюджетом
+    """
+    return Budget(pk=int(budget_row['pk']),
+                  budget=int(budget_row['budget']),
+                  cur_sum=int(budget_row['cur_sum'])
+                  )
+
+
+adapters = {
+    'budget': budget_adapter,
+    'expense': expense_adapter,
+    'category': category_adapter
+}
